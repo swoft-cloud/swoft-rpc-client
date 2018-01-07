@@ -1,6 +1,6 @@
 <?php
 
-namespace Swoft\Service;
+namespace Swoft\Rpc\Client\Service;
 
 use Swoft\Pool\AbstractConnect;
 
