@@ -3,7 +3,7 @@
 namespace Swoft\Rpc\Client\Service;
 
 use Swoft\App;
-use Swoft\Web\AbstractResult;
+use Swoft\Core\AbstractResult;
 
 /**
  * RPC结果集
@@ -24,7 +24,7 @@ class ServiceResult extends AbstractResult
         $result = $this->recv();
 
         App::debug("RPC调用结果，Data=" . json_encode($result));
-        $packer = App::getPacker();
+        $packer = service_packer();
         $result = $packer->unpack($result);
         $data = $packer->checkData($result);
         return $data;

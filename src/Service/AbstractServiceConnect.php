@@ -5,7 +5,7 @@ namespace Swoft\Rpc\Client\Service;
 use Swoft\Pool\AbstractConnect;
 
 /**
- *
+ * the connnect of service connect
  *
  * @uses      AbstractServiceConnect
  * @version   2017年10月02日

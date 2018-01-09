@@ -3,9 +3,10 @@
 namespace Swoft\Rpc\Client\Pool;
 
 use Swoft\App;
-use Swoft\Service\AbstractServiceConnect;
-use Swoft\Service\ServiceConnect;
-use Swoft\Service\SyncServiceConnect;
+use Swoft\Pool\ConnectPool;
+use Swoft\Rpc\Client\Service\ServiceConnect;
+use Swoft\Rpc\Client\Service\SyncServiceConnect;
+use Swoft\Rpc\Client\Service\AbstractServiceConnect;
 
 /**
  * RPC服务连接池
@@ -28,6 +29,7 @@ class ServicePool extends ConnectPool
         if (App::isWorkerStatus()) {
             return new ServiceConnect($this);
         }
+
         return new SyncServiceConnect($this);
     }
 

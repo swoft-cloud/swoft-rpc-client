@@ -4,7 +4,6 @@ namespace Swoft\Rpc\Client\Service;
 
 use Swoft\App;
 use Swoft\Circuit\CircuitBreaker;
-use Swoft\Pool\ServicePool;
 
 /**
  * RPC服务调用
@@ -56,7 +55,7 @@ class Service
 
         /* @var $client AbstractServiceConnect */
         $client = $connectPool->getConnect();
-        $packer = App::getPacker();
+        $packer = service_packer();
 
         $data = $packer->formatData($func, $params);
         $packData = $packer->pack($data);
@@ -93,15 +92,12 @@ class Service
     {
         $profile = "$serviceName->" . $func;
 
-        /* @var $circuitBreaker CircuitBreaker */
-        $circuitBreaker = App::getBean($serviceName . 'Breaker');
-
-        /* @var $connectPool ServicePool */
-        $connectPool = App::getBean($serviceName . 'Pool');
+        $circuitBreaker = App::getBreaker($serviceName);
+        $connectPool = App::getPool($serviceName);
 
         /* @var $client AbstractServiceConnect */
         $client = $connectPool->getConnect();
-        $packer = App::getPacker();
+        $packer = service_packer();
         $data = $packer->formatData($func, $params);
         $packData = $packer->pack($data);
         $result = $circuitBreaker->call([$client, 'send'], [$packData], $fallback);

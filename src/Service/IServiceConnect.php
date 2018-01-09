@@ -3,7 +3,7 @@
 namespace Swoft\Rpc\Client\Service;
 
 /**
- *
+ * the interface of service connect
  *
  * @uses      IServiceConnect
  * @version   2017年10月02日
