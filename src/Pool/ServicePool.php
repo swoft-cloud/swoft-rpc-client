@@ -3,7 +3,7 @@
 namespace Swoft\Rpc\Client\Pool;
 
 use Swoft\App;
-use Swoft\Pool\ConnectPool;
+use Swoft\Pool\ConnectPoolInterface;
 use Swoft\Rpc\Client\Service\ServiceConnect;
 use Swoft\Rpc\Client\Service\SyncServiceConnect;
 use Swoft\Rpc\Client\Service\AbstractServiceConnect;
@@ -17,7 +17,7 @@ use Swoft\Rpc\Client\Service\AbstractServiceConnect;
  * @copyright Copyright 2010-2016 Swoft software
  * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
  */
-class ServicePool extends ConnectPool
+class ServicePool extends ConnectPoolInterface
 {
     /**
      * 创建连接

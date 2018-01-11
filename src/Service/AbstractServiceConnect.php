@@ -3,6 +3,7 @@
 namespace Swoft\Rpc\Client\Service;
 
 use Swoft\Pool\AbstractConnect;
+use Swoft\Pool\AbstractConnectInterface;
 
 /**
  * the connnect of service connect
@@ -13,6 +14,6 @@ use Swoft\Pool\AbstractConnect;
  * @copyright Copyright 2010-2016 swoft software
  * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
  */
-abstract class AbstractServiceConnect extends AbstractConnect implements IServiceConnect
+abstract class AbstractServiceConnect extends AbstractConnectInterface implements IServiceConnect
 {
 }
