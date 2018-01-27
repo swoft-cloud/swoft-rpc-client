@@ -6,13 +6,9 @@ use Swoft\App;
 use Swoole\Coroutine\Client;
 
 /**
+ * Class ServiceConnect
  *
- *
- * @uses      ServiceConnect
- * @version   2017年09月28日
- * @author    stelin <phpcrazy@126.com>
- * @copyright Copyright 2010-2016 swoft software
- * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
+ * @package Swoft\Rpc\Client\Service
  */
 class ServiceConnect extends AbstractServiceConnect
 {
@@ -27,9 +23,9 @@ class ServiceConnect extends AbstractServiceConnect
 
         $address = $this->connectPool->getConnectAddress();
         $timeout = $this->connectPool->getTimeout();
-        list($host, $port) = explode(":", $address);
-        if (!$client->connect($host, $port, $timeout)) {
-            App::error("Service connect fail errorCode=" . $client->errCode . " host=" . $host . " port=" . $port);
+        list($host, $port) = explode(':', $address);
+        if (! $client->connect($host, $port, $timeout)) {
+            App::error('Service connect fail errorCode=' . $client->errCode . ' host=' . $host . ' port=' . $port);
             return null;
         }
         $this->connect = $client;
@@ -41,7 +37,6 @@ class ServiceConnect extends AbstractServiceConnect
 
     /**
      * @param string $data
-     *
      * @return bool
      */
     public function send(string $data): bool

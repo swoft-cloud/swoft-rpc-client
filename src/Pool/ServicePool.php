@@ -24,7 +24,7 @@ class ServicePool extends ConnectPoolInterface
      *
      * @return AbstractServiceConnect
      */
-    public function createConnect()
+    public function createConnect(): AbstractServiceConnect
     {
         if (App::isWorkerStatus()) {
             return new ServiceConnect($this);

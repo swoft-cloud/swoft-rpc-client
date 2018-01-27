@@ -3,16 +3,12 @@
 namespace Swoft\Rpc\Client\Service;
 
 use Swoft\App;
-use Swoft\Circuit\CircuitBreaker;
 
 /**
- * RPC服务调用
+ * Class Service
+ * RPC Service call
  *
- * @uses      InnerService
- * @version   2017年07月14日
- * @author    stelin <phpcrazy@126.com>
- * @copyright Copyright 2010-2016 Swoft software
- * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
+ * @package Swoft\Rpc\Client\Service
  */
 class Service
 {
@@ -22,7 +18,7 @@ class Service
     const FAIL_FAST = 1;
 
     /**
-     *  如果Client调用失败，会尝试从服务列表中选择另外一个服务器调用，直到成功或者到达重试次数
+     * 如果Client调用失败，会尝试从服务列表中选择另外一个服务器调用，直到成功或者到达重试次数
      */
     const FAIL_OVER = 2;
 
@@ -43,12 +39,11 @@ class Service
      * @param string   $func        调用函数，例如:User::getUserInfo
      * @param array    $params      函数参数，数组参数[1,2]
      * @param callable $fallback    降级处理，例如:[class,'getDefaultUserInfo']
-     *
      * @return mixed
      */
     public static function call(string $serviceName, string $func, array $params = [], callable $fallback = null)
     {
-        $profileKey = "$serviceName->" . $func;
+        $profileKey = $serviceName . '->' . $func;
 
         $criuitBreaker = App::getBreaker($serviceName);
         $connectPool = App::getPool($serviceName);
@@ -85,12 +80,11 @@ class Service
      * @param string   $func        调用函数，例如:User::getUserInfos
      * @param array    $params      函数参数，数组参数[1,2]
      * @param callable $fallback    降级处理，例如:[class,'getDefaultUserInfo']
-     *
      * @return ServiceResult
      */
-    public static function deferCall($serviceName, $func, array $params, $fallback = null)
+    public static function deferCall($serviceName, $func, array $params, $fallback = null): ServiceResult
     {
-        $profile = "$serviceName->" . $func;
+        $profileKey = $serviceName . '->' . $func;
 
         $circuitBreaker = App::getBreaker($serviceName);
         $connectPool = App::getPool($serviceName);
@@ -102,6 +96,6 @@ class Service
         $packData = $packer->pack($data);
         $result = $circuitBreaker->call([$client, 'send'], [$packData], $fallback);
 
-        return new ServiceResult($connectPool, $client, $profile, $result);
+        return new ServiceResult($connectPool, $client, $profileKey, $result);
     }
 }

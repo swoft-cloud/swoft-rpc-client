@@ -12,16 +12,23 @@
     "require": {
         "swoft/framework": "dev-component"
     },
+    "require-dev": {
+        "eaglewu/swoole-ide-helper": "dev-master",
+        "phpunit/phpunit": "^5.7"
+    },
     "autoload": {
-        "classmap": [
-        ],
         "psr-4": {
             "Swoft\\Rpc\\Client\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "SwoftTest\\Rpc\\Client\\": "test/Cases"
+        }
+    },
     "repositories": [
         {
-            "type": "git",
+            "type": "vcs",
             "url": "https://github.com/swoft-cloud/framework"
         },
         {
@@ -29,10 +36,6 @@
             "url": "https://packagist.phpcomposer.com"
         }
     ],
-    "require-dev": {
-        "eaglewu/swoole-ide-helper": "dev-master",
-        "phpunit/phpunit": "^5.7"
-    },
     "scripts": {
         "test": "./vendor/bin/phpunit -c phpunit.xml"
     }
