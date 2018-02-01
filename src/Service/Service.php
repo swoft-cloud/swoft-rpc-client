@@ -3,6 +3,7 @@
 namespace Swoft\Rpc\Client\Service;
 
 use Swoft\App;
+use Swoft\Core\ResultInterface;
 
 /**
  * Class Service
@@ -80,9 +81,9 @@ class Service
      * @param string   $func        调用函数，例如:User::getUserInfos
      * @param array    $params      函数参数，数组参数[1,2]
      * @param callable $fallback    降级处理，例如:[class,'getDefaultUserInfo']
-     * @return ServiceResult
+     * @return ResultInterface
      */
-    public static function deferCall($serviceName, $func, array $params, $fallback = null): ServiceResult
+    public static function deferCall($serviceName, $func, array $params, $fallback = null): ResultInterface
     {
         $profileKey = $serviceName . '->' . $func;
 
@@ -96,6 +97,6 @@ class Service
         $packData = $packer->pack($data);
         $result = $circuitBreaker->call([$client, 'send'], [$packData], $fallback);
 
-        return new ServiceResult($connectPool, $client, $profileKey, $result);
+        return new ServiceCoResult($client, $profileKey, $connectPool);
     }
 }
