@@ -13,12 +13,12 @@ class Reference
     /**
      * @var string
      */
-    private $name;
+    private $name = "";
 
     /**
      * @var string
      */
-    private $version = "";
+    private $version = "0";
 
     /**
      * @var string
