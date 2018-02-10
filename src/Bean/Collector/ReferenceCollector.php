@@ -30,7 +30,6 @@ class ReferenceCollector implements CollectorInterface
     public static function collect(string $className, $objectAnnotation = null, string $propertyName = '', string $methodName = '', $propertyValue = null)
     {
         if ($objectAnnotation instanceof Reference) {
-
             // phpdoc解析
             $phpReader     = new PhpDocReader();
             $property      = new \ReflectionProperty($className, $propertyName);

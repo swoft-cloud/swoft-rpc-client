@@ -7,24 +7,21 @@ use Swoft\Bean\Annotation\Value;
 use Swoft\Rpc\Client\Bean\Annotation\Reference;
 
 /**
- * The wrapper of controller
+ * The bean wrapper
  */
-class ControllerWrapper extends \Swoft\Http\Server\Bean\Wrapper\ControllerWrapper
+class BeanWrapper extends \Swoft\Bean\Wrapper\BeanWrapper
 {
     /**
-     * 属性注解
-     *
      * @var array
      */
-    protected $propertyAnnotations = [
-        Inject::class,
-        Value::class,
-        Reference::class
-    ];
+    protected $propertyAnnotations
+        = [
+            Inject::class,
+            Value::class,
+            Reference::class,
+        ];
 
     /**
-     * 是否解析属性注解
-     *
      * @param array $annotations
      *
      * @return bool

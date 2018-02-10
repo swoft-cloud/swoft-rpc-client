@@ -13,7 +13,7 @@ use Swoft\Rpc\Client\Service\ServiceCoResult;
 use Swoft\Rpc\Client\Service\ServiceDataResult;
 
 /**
- * The trait of service
+ * The service trait
  */
 class Service
 {
@@ -168,7 +168,7 @@ class Service
      */
     private function getResult(ConnectInterface $client, string $profileKey, ConnectPool $connectPool, $result)
     {
-        if (App::isCorContext()) {
+        if (App::isCoContext()) {
             return new ServiceCoResult($client, $profileKey, $connectPool);
         }
 
