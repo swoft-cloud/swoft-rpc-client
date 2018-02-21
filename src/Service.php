@@ -8,7 +8,7 @@ use Swoft\Pool\ConnectInterface;
 use Swoft\Rpc\Client\Exception\RpcClientException;
 use Swoft\Rpc\Client\Service\AbstractServiceConnect;
 use Swoft\Pool\ConnectPool;
-use Swoft\Circuit\CircuitBreaker;
+use Swoft\Sg\Circuit\CircuitBreaker;
 use Swoft\Rpc\Client\Service\ServiceCoResult;
 use Swoft\Rpc\Client\Service\ServiceDataResult;
 
@@ -181,10 +181,10 @@ class Service
     private function getBreaker()
     {
         if (empty($this->breakerName)) {
-            return App::getBreaker($this->name);
+            return breaker($this->name);
         }
 
-        return App::getBreaker($this->breakerName);
+        return breaker($this->breakerName);
     }
 
     /**
