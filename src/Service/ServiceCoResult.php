@@ -17,7 +17,7 @@ class ServiceCoResult extends AbstractCoResult
      */
     public function getResult(...$params)
     {
-        $result = $this->recv(true);
+        $result = $this->recv();
         App::debug('service result =' . json_encode($result));
         $packer = service_packer();
         $result = $packer->unpack($result);
