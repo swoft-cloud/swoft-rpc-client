@@ -4,6 +4,8 @@ namespace Swoft\Rpc\Client;
 
 use Swoft\App;
 use Swoft\Core\ResultInterface;
+use Swoft\Helper\JsonHelper;
+use Swoft\Helper\PhpHelper;
 use Swoft\Pool\ConnectInterface;
 use Swoft\Rpc\Client\Exception\RpcClientException;
 use Swoft\Rpc\Client\Service\AbstractServiceConnect;
@@ -63,41 +65,55 @@ class Service
     protected $interface;
 
     /**
+     * @var string
+     */
+    protected $fallback;
+
+    /**
      * Do call service
      *
      * @param string $func
      * @param array  $params
      *
+     * @throws \Throwable
      * @return mixed
      */
     public function call(string $func, array $params)
     {
         $profileKey = $this->interface . '->' . $func;
+        $fallback   = $this->getFallbackHandler($func);
 
-        $connectPool    = $this->getPool();
-        $circuitBreaker = $this->getBreaker();
+        try {
+            $connectPool    = $this->getPool();
+            $circuitBreaker = $this->getBreaker();
 
-        /* @var $client AbstractServiceConnect */
-        $client = $connectPool->getConnect();
+            /* @var $client AbstractServiceConnect */
+            $client = $connectPool->getConnect();
 
-        $packer   = service_packer();
-        $type     = $this->getPackerName();
-        $data     = $packer->formatData($this->interface, $this->version, $func, $params);
-        $packData = $packer->pack($data, $type);
-        $result   = $circuitBreaker->call([$client, 'send'], [$packData]);
+            $packer   = service_packer();
+            $type     = $this->getPackerName();
+            $data     = $packer->formatData($this->interface, $this->version, $func, $params);
+            $packData = $packer->pack($data, $type);
 
-        if ($result === null || $result === false) {
-            return null;
+            $result = $circuitBreaker->call([$client, 'send'], [$packData], $fallback);
+            if ($result === null || $result === false) {
+                return null;
+            }
+
+            App::profileStart($profileKey);
+            $result = $client->recv();
+            App::profileEnd($profileKey);
+            $connectPool->release($client);
+
+            App::debug(sprintf('%s call %s success, data=%', $this->interface, $func, json_encode($data, JSON_UNESCAPED_UNICODE)));
+            $result = $packer->unpack($result);
+            $data   = $packer->checkData($result);
+        } catch (\Throwable $throwable) {
+            if (empty($fallback)) {
+                throw $throwable;
+            }
+            $data = PhpHelper::call($fallback, $params);
         }
-
-        App::profileStart($profileKey);
-        $result = $client->recv();
-        App::profileEnd($profileKey);
-        $connectPool->release($client);
-
-        App::debug(sprintf('%s call %s success, data=%', $this->interface, $func, json_encode($data, JSON_UNESCAPED_UNICODE)));
-        $result = $packer->unpack($result);
-        $data   = $packer->checkData($result);
 
         return $data;
     }
@@ -132,27 +148,40 @@ class Service
      * @param string $func
      * @param array  $params
      *
+     * @throws \Throwable
      * @return ResultInterface
      */
     private function deferCall(string $func, array $params)
     {
         $profileKey = $this->interface . '->' . $func;
+        $fallback   = $this->getFallbackHandler($func);
 
-        $connectPool    = $this->getPool();
-        $circuitBreaker = $this->getBreaker();
+        try {
+            $connectPool    = $this->getPool();
+            $circuitBreaker = $this->getBreaker();
 
-        /* @var $client AbstractServiceConnect */
-        $client = $connectPool->getConnect();
+            /* @var $client AbstractServiceConnect */
+            $client = $connectPool->getConnect();
 
-        $packer   = service_packer();
-        $type     = $this->getPackerName();
-        $data     = $packer->formatData($this->interface, $this->version, $func, $params);
-        $packData = $packer->pack($data, $type);
-        $result   = $circuitBreaker->call([$client, 'send'], [$packData]);
+            $packer   = service_packer();
+            $type     = $this->getPackerName();
+            $data     = $packer->formatData($this->interface, $this->version, $func, $params);
+            $packData = $packer->pack($data, $type);
 
-        // 错误处理
-        if ($result === null || $result === false) {
-            return null;
+            $result = $circuitBreaker->call([$client, 'send'], [$packData], $fallback);
+
+            // 错误处理
+            if ($result === null || $result === false) {
+                return null;
+            }
+        } catch (\Throwable $throwable) {
+            if (empty($fallback)) {
+                throw $throwable;
+            }
+
+            $client      = null;
+            $connectPool = null;
+            $result      = PhpHelper::call($fallback, $params);
         }
 
         return $this->getResult($client, $profileKey, $connectPool, $result);
@@ -166,10 +195,12 @@ class Service
      *
      * @return ResultInterface
      */
-    private function getResult(ConnectInterface $client, string $profileKey, ConnectPool $connectPool, $result)
+    private function getResult(ConnectInterface $client = null, string $profileKey = '', ConnectPool $connectPool = null, $result = null)
     {
         if (App::isCoContext()) {
-            return new ServiceCoResult($client, $profileKey, $connectPool);
+            $serviceCoResult = new ServiceCoResult($client, $profileKey, $connectPool);
+            $serviceCoResult->setFallbackData($result);
+            return $serviceCoResult;
         }
 
         return new ServiceDataResult($result);
@@ -181,10 +212,10 @@ class Service
     private function getBreaker()
     {
         if (empty($this->breakerName)) {
-            return breaker($this->name);
+            return \breaker($this->name);
         }
 
-        return breaker($this->breakerName);
+        return \breaker($this->breakerName);
     }
 
     /**
@@ -209,5 +240,28 @@ class Service
         }
 
         return $this->packerName;
+    }
+
+    /**
+     * @param string $method
+     *
+     * @return array|null
+     */
+    private function getFallbackHandler(string $method)
+    {
+        if (empty($this->fallback)) {
+            return null;
+        }
+
+        $fallback   = \fallback($this->fallback);
+        $interfaces = class_implements(static::class);
+        foreach ($interfaces as $interface) {
+            if (is_subclass_of($fallback, $interface)) {
+                return [$fallback, $method];
+            }
+        }
+
+        App::warning(sprintf('The %s class does not implement the %s interface', get_parent_class($fallback), JsonHelper::encode($interfaces, JSON_UNESCAPED_UNICODE)));
+        return null;
     }
 }

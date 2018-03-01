@@ -3,6 +3,7 @@
 namespace Swoft\Rpc\Client\Service;
 
 use Swoft\App;
+use Swoft\Rpc\Client\Exception\RpcClientException;
 use Swoole\Coroutine\Client;
 
 /**
@@ -26,7 +27,7 @@ class ServiceConnect extends AbstractServiceConnect
         list($host, $port) = explode(':', $address);
         if (! $client->connect($host, $port, $timeout)) {
             App::error('Service connect fail errorCode=' . $client->errCode . ' host=' . $host . ' port=' . $port);
-            return null;
+            throw new RpcClientException('Service connect fail errorCode=' . $client->errCode . ' host=' . $host . ' port=' . $port);
         }
         $this->connect = $client;
     }

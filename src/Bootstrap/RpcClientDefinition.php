@@ -21,7 +21,7 @@ class RpcClientDefinition implements DefinitionInterface
         $definitions = [];
         $collector   = ReferenceCollector::getCollector();
         foreach ($collector as $className => $interfaceAry) {
-            list($name, $interfaceClass, $version, $pool, $breaker, $packer) = $interfaceAry;
+            list($name, $interfaceClass, $version, $pool, $breaker, $packer, $fallback) = $interfaceAry;
             ServiceProxy::loadProxyClass($className, $interfaceClass);
 
             $definitions[$className] = [
@@ -32,6 +32,7 @@ class RpcClientDefinition implements DefinitionInterface
                 'breakerName' => $breaker,
                 'packerName'  => $packer,
                 'interface'   => $interfaceClass,
+                'fallback'    => $fallback
             ];
         }
         return $definitions;

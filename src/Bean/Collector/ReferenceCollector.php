@@ -39,6 +39,7 @@ class ReferenceCollector implements CollectorInterface
             $version       = $objectAnnotation->getVersion();
             $breaker       = $objectAnnotation->getBreaker();
             $packer        = $objectAnnotation->getBreaker();
+            $fallback      = $objectAnnotation->getFallback();
 
             $className      = sprintf("%s.%s.%s.%s.%s.%s", $name, $propertyClass, $version, $pool, $breaker, $packer);
             $className      = md5($className);
@@ -59,6 +60,7 @@ class ReferenceCollector implements CollectorInterface
                 $pool,
                 $breaker,
                 $packer,
+                $fallback
             ];
 
             return $className;

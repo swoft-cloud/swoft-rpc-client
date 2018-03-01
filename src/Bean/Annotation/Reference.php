@@ -35,6 +35,11 @@ class Reference
      */
     private $packer = "";
 
+    /**
+     * @var string
+     */
+    private $fallback = "";
+
     public function __construct(array $values)
     {
         if (isset($values['value'])) {
@@ -54,6 +59,9 @@ class Reference
         }
         if (isset($values['packer'])) {
             $this->packer = $values['packer'];
+        }
+        if (isset($values['fallback'])) {
+            $this->fallback = $values['fallback'];
         }
     }
 
@@ -95,5 +103,13 @@ class Reference
     public function getPacker(): string
     {
         return $this->packer;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFallback(): string
+    {
+        return $this->fallback;
     }
 }
