@@ -6,13 +6,13 @@ use Swoft\App;
 use Swoft\Core\ResultInterface;
 use Swoft\Helper\JsonHelper;
 use Swoft\Helper\PhpHelper;
-use Swoft\Pool\ConnectInterface;
+use Swoft\Pool\ConnectionInterface;
+use Swoft\Pool\PoolInterface;
 use Swoft\Rpc\Client\Exception\RpcClientException;
-use Swoft\Rpc\Client\Service\AbstractServiceConnect;
-use Swoft\Pool\ConnectPool;
-use Swoft\Sg\Circuit\CircuitBreaker;
+use Swoft\Rpc\Client\Service\AbstractServiceConnection;
 use Swoft\Rpc\Client\Service\ServiceCoResult;
 use Swoft\Rpc\Client\Service\ServiceDataResult;
+use Swoft\Sg\Circuit\CircuitBreaker;
 
 /**
  * The service trait
@@ -87,8 +87,8 @@ class Service
             $connectPool    = $this->getPool();
             $circuitBreaker = $this->getBreaker();
 
-            /* @var $client AbstractServiceConnect */
-            $client = $connectPool->getConnect();
+            /* @var $client AbstractServiceConnection */
+            $client = $connectPool->getConnection();
 
             $packer   = service_packer();
             $type     = $this->getPackerName();
@@ -160,8 +160,8 @@ class Service
             $connectPool    = $this->getPool();
             $circuitBreaker = $this->getBreaker();
 
-            /* @var $client AbstractServiceConnect */
-            $client = $connectPool->getConnect();
+            /* @var $client AbstractServiceConnection */
+            $client = $connectPool->getConnection();
 
             $packer   = service_packer();
             $type     = $this->getPackerName();
@@ -188,18 +188,19 @@ class Service
     }
 
     /**
-     * @param ConnectInterface $client
-     * @param string           $profileKey
-     * @param ConnectPool      $connectPool
-     * @param mixed            $result
+     * @param ConnectionInterface $client
+     * @param string              $profileKey
+     * @param PoolInterface       $connectPool
+     * @param mixed               $result
      *
      * @return ResultInterface
      */
-    private function getResult(ConnectInterface $client = null, string $profileKey = '', ConnectPool $connectPool = null, $result = null)
+    private function getResult(ConnectionInterface $client = null, string $profileKey = '', PoolInterface $connectPool = null, $result = null)
     {
         if (App::isCoContext()) {
             $serviceCoResult = new ServiceCoResult($client, $profileKey, $connectPool);
             $serviceCoResult->setFallbackData($result);
+
             return $serviceCoResult;
         }
 
@@ -219,7 +220,7 @@ class Service
     }
 
     /**
-     * @return ConnectPool
+     * @return PoolInterface
      */
     private function getPool()
     {
@@ -262,6 +263,7 @@ class Service
         }
 
         App::warning(sprintf('The %s class does not implement the %s interface', get_parent_class($fallback), JsonHelper::encode($interfaces, JSON_UNESCAPED_UNICODE)));
+
         return null;
     }
 }
