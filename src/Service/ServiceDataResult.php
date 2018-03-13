@@ -11,10 +11,13 @@ class ServiceDataResult extends AbstractDataResult
 {
     /**
      * @param array ...$params
+     *
      * @return mixed
      */
     public function getResult(...$params)
     {
+        $this->release();
+
         return $this->data;
     }
 }

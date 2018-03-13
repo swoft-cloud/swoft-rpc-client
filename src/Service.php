@@ -160,15 +160,15 @@ class Service
             $connectPool    = $this->getPool();
             $circuitBreaker = $this->getBreaker();
 
-            /* @var $client AbstractServiceConnection */
-            $client = $connectPool->getConnection();
+            /* @var ConnectionInterface $connection */
+            $connection = $connectPool->getConnection();
 
             $packer   = service_packer();
             $type     = $this->getPackerName();
             $data     = $packer->formatData($this->interface, $this->version, $func, $params);
             $packData = $packer->pack($data, $type);
 
-            $result = $circuitBreaker->call([$client, 'send'], [$packData], $fallback);
+            $result = $circuitBreaker->call([$connection, 'send'], [$packData], $fallback);
 
             // 错误处理
             if ($result === null || $result === false) {
@@ -179,32 +179,30 @@ class Service
                 throw $throwable;
             }
 
-            $client      = null;
-            $connectPool = null;
-            $result      = PhpHelper::call($fallback, $params);
+            $connection = null;
+            $result     = PhpHelper::call($fallback, $params);
         }
 
-        return $this->getResult($client, $profileKey, $connectPool, $result);
+        return $this->getResult($connection, $profileKey, $result);
     }
 
     /**
-     * @param ConnectionInterface $client
+     * @param ConnectionInterface $connection
      * @param string              $profileKey
-     * @param PoolInterface       $connectPool
      * @param mixed               $result
      *
      * @return ResultInterface
      */
-    private function getResult(ConnectionInterface $client = null, string $profileKey = '', PoolInterface $connectPool = null, $result = null)
+    private function getResult(ConnectionInterface $connection = null, string $profileKey = '', $result = null)
     {
         if (App::isCoContext()) {
-            $serviceCoResult = new ServiceCoResult($client, $profileKey, $connectPool);
+            $serviceCoResult = new ServiceCoResult($connection, $profileKey);
             $serviceCoResult->setFallbackData($result);
 
             return $serviceCoResult;
         }
 
-        return new ServiceDataResult($result);
+        return new ServiceDataResult($result, $connection);
     }
 
     /**

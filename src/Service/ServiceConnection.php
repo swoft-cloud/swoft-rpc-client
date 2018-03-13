@@ -34,6 +34,12 @@ class ServiceConnection extends AbstractServiceConnection
         $this->connection = $client;
     }
 
+    public function receive()
+    {
+        $this->connection->recv();
+        $this->recv = true;
+    }
+
     /**
      * @return void
      */
@@ -57,7 +63,9 @@ class ServiceConnection extends AbstractServiceConnection
      */
     public function send(string $data): bool
     {
-        return $this->connection->send($data);
+        $result =  $this->connection->send($data);
+        $this->recv = false;
+        return $result;
     }
 
     /**
