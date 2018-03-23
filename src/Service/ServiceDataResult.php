@@ -2,6 +2,7 @@
 
 namespace Swoft\Rpc\Client\Service;
 
+use Swoft\App;
 use Swoft\Core\AbstractDataResult;
 
 /**
@@ -10,14 +11,40 @@ use Swoft\Core\AbstractDataResult;
 class ServiceDataResult extends AbstractDataResult
 {
     /**
+     * @var mixed
+     */
+    private $fallbackData;
+
+    /**
      * @param array ...$params
      *
      * @return mixed
+     * @throws \Throwable
      */
     public function getResult(...$params)
     {
-        $this->release();
+        try {
+            $result = $this->connection->recv();
+            App::debug('service result =' . json_encode($result));
+            $packer = service_packer();
+            $result = $packer->unpack($result);
+            $data   = $packer->checkData($result);
+        } catch (\Throwable $throwable) {
+            if (empty($this->fallbackData)) {
+                throw $throwable;
+            }
+            $data = $this->fallbackData;
+        }
 
-        return $this->data;
+        $this->release();
+        return $data;
+    }
+
+    /**
+     * @param mixed $fallbackData
+     */
+    public function setFallbackData($fallbackData)
+    {
+        $this->fallbackData = $fallbackData;
     }
 }
