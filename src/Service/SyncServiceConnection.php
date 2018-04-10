@@ -55,13 +55,25 @@ class SyncServiceConnection extends AbstractServiceConnection
     }
 
     /**
+     * @return string
+     */
+    public function receive()
+    {
+        $result = $this->recv();
+        $this->recv = true;
+        return $result;
+    }
+
+    /**
      * @param string $data
      *
      * @return bool
      */
     public function send(string $data): bool
     {
-        return fwrite($this->connection, $data);
+        $result = fwrite($this->connection, $data);
+        $this->recv = false;
+        return $result;
     }
 
     /**

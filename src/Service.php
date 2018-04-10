@@ -101,9 +101,9 @@ class Service
             }
 
             App::profileStart($profileKey);
-            $result = $client->recv();
+            $result = $client->receive();
             App::profileEnd($profileKey);
-            $connectPool->release($client);
+            $client->release(true);
 
             App::debug(sprintf('%s call %s success, data=%', $this->interface, $func, json_encode($data, JSON_UNESCAPED_UNICODE)));
             $result = $packer->unpack($result);
@@ -170,7 +170,6 @@ class Service
 
             $result = $circuitBreaker->call([$connection, 'send'], [$packData], $fallback);
 
-            // 错误处理
             if ($result === null || $result === false) {
                 return null;
             }
@@ -196,13 +195,13 @@ class Service
     private function getResult(ConnectionInterface $connection = null, string $profileKey = '', $result = null)
     {
         if (App::isCoContext()) {
-            $serviceCoResult = new ServiceCoResult($connection, $profileKey);
+            $serviceCoResult = new ServiceCoResult($result, $connection, $profileKey);
             $serviceCoResult->setFallbackData($result);
 
             return $serviceCoResult;
         }
 
-        return new ServiceDataResult($result, $connection);
+        return new ServiceDataResult($result, $connection, $profileKey);
     }
 
     /**

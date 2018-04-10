@@ -36,7 +36,7 @@ class ServiceConnection extends AbstractServiceConnection
 
     public function receive()
     {
-        $result = $this->connection->recv();
+        $result = $this->recv();
         $this->recv = true;
         return $result;
     }

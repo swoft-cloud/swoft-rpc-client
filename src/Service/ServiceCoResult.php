@@ -3,12 +3,12 @@
 namespace Swoft\Rpc\Client\Service;
 
 use Swoft\App;
-use Swoft\Core\AbstractCoResult;
+use Swoft\Core\AbstractResult;
 
 /**
- * The cor result of server
+ * ServiceCoResult
  */
-class ServiceCoResult extends AbstractCoResult
+class ServiceCoResult extends AbstractResult
 {
     /**
      * @var mixed
